@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe — Social Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f5;
+  --surface:#ffffff;
+  --surface2:#f2f1ef;
+  --border:#e8e6e2;
+  --border2:#d5d2cc;
+  --text:#1a1916;
+  --text2:#6b6860;
+  --text3:#b0ada8;
+  --accent:#e84545;
+  --accent2:#c73030;
+  --safe:#0fa968;
+  --safe-bg:#e8f8f0;
+  --safe-border:#a3e6c6;
+  --warn:#f59e0b;
+  --warn-bg:#fef3c7;
+  --warn-border:#fcd34d;
+  --danger:#e84545;
+  --danger-bg:#fef2f2;
+  --danger-border:#fca5a5;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.14);
+  --font:'DM Sans',sans-serif;
+}
+
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--text)}
+
+/* ── APP SHELL ── */
+.app{display:grid;grid-template-columns:280px 1fr 380px;height:100vh;overflow:hidden}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:0;overflow:hidden;
+}
+.sidebar-header{padding:22px 24px 16px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-logo svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2}
+.brand-name{font-family:'Playfair Display',serif;font-size:20px;color:var(--text)}
+
+.nav{padding:12px 12px;display:flex;flex-direction:column;gap:2px;flex:1}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;border-radius:10px;
+  font-size:14px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all 0.15s;
+  text-decoration:none;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--text);color:#fff}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;
+}
+
+.sidebar-user{
+  padding:16px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.user-avi{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,#f093fb,#f5576c);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:15px;flex-shrink:0;
+}
+.user-info .uname{font-size:13px;font-weight:600;color:var(--text)}
+.user-info .uhandle{font-size:11px;color:var(--text3)}
+
+/* model status pills */
+.model-status{padding:0 16px 14px;display:flex;gap:6px}
+.mpill{
+  font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:0.02em;
+}
+.mpill.on{background:var(--safe-bg);color:var(--safe);border:1px solid var(--safe-border)}
+.mpill.off{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+
+/* ── FEED CENTER ── */
+.feed{
+  overflow-y:auto;padding:0;
+  border-right:1px solid var(--border);
+  background:var(--bg);
+}
+.feed::-webkit-scrollbar{width:0}
+
+.feed-header{
+  position:sticky;top:0;z-index:10;
+  background:rgba(248,247,245,0.9);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.feed-header h2{font-size:17px;font-weight:700;color:var(--text)}
+.feed-tabs{display:flex;gap:6px}
+.ftab{
+  padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;border:none;background:transparent;color:var(--text2);
+}
+.ftab.active{background:var(--text);color:#fff}
+
+/* stories row */
+.stories-row{
+  padding:16px 20px;
+  display:flex;gap:14px;overflow-x:auto;
+  border-bottom:1px solid var(--border);
+}
+.stories-row::-webkit-scrollbar{height:0}
+.story-item{flex-shrink:0;text-align:center;cursor:pointer}
+.story-ring{
+  width:56px;height:56px;border-radius:50%;
+  padding:2px;background:linear-gradient(135deg,#f093fb,#f5576c,#f59e0b);
+  margin-bottom:6px;
+}
+.story-inner{
+  width:100%;height:100%;border-radius:50%;
+  overflow:hidden;border:2px solid var(--bg);
+}
+.story-inner img{width:100%;height:100%;object-fit:cover}
+.story-label{font-size:10px;color:var(--text2);font-weight:500;max-width:56px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-add-ring{
+  width:56px;height:56px;border-radius:50%;
+  border:2px dashed var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:6px;cursor:pointer;
+}
+.story-add-ring svg{width:20px;height:20px;stroke:var(--text3)}
+
+/* posts */
+.post-card{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+}
+.post-top{
+  padding:14px 18px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.post-avi{
+  width:40px;height:40px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  background:var(--surface2);
+}
+.post-avi img{width:100%;height:100%;object-fit:cover}
+.post-meta{flex:1}
+.post-user{font-size:13px;font-weight:700;color:var(--text)}
+.post-time{font-size:11px;color:var(--text3)}
+.post-more{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background 0.15s;
+}
+.post-more:hover{background:var(--surface2)}
+.post-more svg{width:14px;height:14px;stroke:var(--text3)}
+
+.post-img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--surface2)}
+.post-img.tall{aspect-ratio:3/4}
+.post-img.wide{aspect-ratio:16/9}
+
+/* post verdict badge overlaid */
+.post-img-wrap{position:relative;overflow:hidden}
+.post-verdict-badge{
+  position:absolute;top:10px;right:10px;
+  font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;
+  letter-spacing:0.05em;backdrop-filter:blur(8px);
+  display:none;
+}
+.post-verdict-badge.show{display:block}
+.post-verdict-badge.approved{background:rgba(15,169,104,0.9);color:#fff}
+.post-verdict-badge.blocked{background:rgba(232,69,69,0.92);color:#fff}
+.post-verdict-badge.warning{background:rgba(245,158,11,0.9);color:#fff}
+
+.post-body{padding:12px 18px}
+.post-caption{font-size:14px;color:var(--text);line-height:1.55;margin-bottom:10px}
+.post-caption .highlight{color:var(--accent);font-weight:500}
+.post-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.post-tag{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer}
+
+.post-actions{display:flex;align-items:center;gap:2px;padding-top:8px;border-top:1px solid var(--border)}
+.action-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 10px;border-radius:8px;
+  font-size:12px;font-weight:500;color:var(--text2);
+  cursor:pointer;transition:all 0.15s;border:none;background:none;font-family:var(--font);
+}
+.action-btn:hover{background:var(--surface2);color:var(--text)}
+.action-btn svg{width:16px;height:16px}
+.action-btn.liked{color:var(--accent)}
+.action-btn.liked svg{fill:var(--accent);stroke:var(--accent)}
+.share-btn{margin-left:auto}
+
+/* ── RIGHT: COMPOSER ── */
+.composer-col{
+  display:flex;flex-direction:column;
+  background:var(--surface);overflow:hidden;
+}
+.composer-header{
+  padding:18px 22px 14px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.composer-header h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px}
+.composer-header p{font-size:12px;color:var(--text3)}
+
+/* tabs */
+.comp-tabs{
+  display:flex;padding:12px 22px 0;gap:0;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.comp-tab{
+  padding:8px 16px;font-size:13px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;
+  margin-bottom:-1px;
+}
+.comp-tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+.comp-body{flex:1;overflow-y:auto;padding:16px 22px;display:flex;flex-direction:column;gap:14px}
+.comp-body::-webkit-scrollbar{width:0}
+
+/* upload zone */
+.upload-zone{
+  border:2px dashed var(--border2);
+  border-radius:var(--radius);
+  aspect-ratio:16/9;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;
+  background:var(--surface2);
+}
+.upload-zone:hover{border-color:var(--text3);background:var(--border)}
+.upload-zone.has-img{border:none;cursor:default;border-radius:var(--radius)}
+.upload-zone.has-img img.uz-preview{display:block}
+.uz-preview{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.uz-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px}
+.upload-zone.has-img .uz-placeholder{display:none}
+.uz-icon{
+  width:48px;height:48px;border-radius:50%;background:var(--surface);
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+}
+.uz-icon svg{width:20px;height:20px;stroke:var(--text3)}
+.uz-label{font-size:13px;color:var(--text2);font-weight:600}
+.uz-sub{font-size:11px;color:var(--text3)}
+.uz-remove{
+  position:absolute;top:8px;right:8px;z-index:3;
+  background:rgba(0,0,0,0.5);color:#fff;
+  border:none;border-radius:20px;padding:4px 10px;
+  font-size:11px;font-family:var(--font);cursor:pointer;display:none;
+  backdrop-filter:blur(4px);
+}
+.upload-zone.has-img .uz-remove{display:block}
+
+/* form fields */
+.field-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.cap-field{
+  width:100%;border:1.5px solid var(--border2);border-radius:var(--radius-sm);
+  padding:10px 13px;font-size:13px;font-family:var(--font);color:var(--text);
+  background:var(--surface);resize:none;min-height:72px;line-height:1.55;
+  transition:border-color 0.15s;
+}
+.cap-field:focus{outline:none;border-color:var(--text)}
+.cap-field::placeholder{color:var(--text3)}
+.char-row{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.char-c{font-size:11px;color:var(--text3)}
+.char-limit{font-size:11px;color:var(--text3)}
+
+/* tag picker */
+.tag-row{display:flex;flex-wrap:wrap;gap:6px}
+.stag{
+  font-size:12px;padding:5px 12px;border-radius:20px;
+  border:1px solid var(--border2);background:var(--surface);
+  color:var(--text2);cursor:pointer;transition:all 0.15s;
+}
+.stag:hover,.stag.sel{background:var(--text);color:#fff;border-color:var(--text)}
+
+.comp-footer{
+  padding:14px 22px;border-top:1px solid var(--border);flex-shrink:0;
+  display:flex;flex-direction:column;gap:8px;
+}
+.post-submit{
+  width:100%;padding:12px;border-radius:var(--radius-sm);
+  font-size:14px;font-weight:700;font-family:var(--font);
+  cursor:pointer;transition:all 0.2s;
+  border:none;background:var(--text);color:#fff;
+  letter-spacing:0.02em;
+}
+.post-submit:hover:not(:disabled){background:#333}
+.post-submit:disabled{opacity:0.35;cursor:not-allowed}
+.post-draft{
+  width:100%;padding:10px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;font-family:var(--font);
+  cursor:pointer;transition:all 0.15s;
+  border:1.5px solid var(--border2);background:transparent;color:var(--text2);
+}
+.post-draft:hover{background:var(--surface2)}
+
+/* error strip */
+.err-strip{
+  background:var(--danger-bg);border-top:1px solid var(--danger-border);
+  padding:9px 22px;font-size:12px;color:var(--danger);display:none;flex-shrink:0;
+}
+.err-strip.show{display:block}
+
+/* ── SCANNING OVERLAY ── */
+.scan-overlay{
+  position:fixed;inset:0;z-index:100;
+  background:rgba(26,25,22,0.7);
+  backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.3s;
+}
+.scan-overlay.show{display:flex;opacity:1}
+.scan-modal{
+  background:var(--surface);
+  border-radius:20px;
+  width:360px;
+  padding:32px 28px;
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+  box-shadow:var(--shadow-lg);
+  transform:translateY(20px);
+  animation:modal-in 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes modal-in{to{transform:translateY(0)}}
+.scan-preview{
+  width:120px;height:120px;border-radius:16px;overflow:hidden;
+  border:1px solid var(--border);position:relative;box-shadow:var(--shadow-lg);
+}
+.scan-preview img{width:100%;height:100%;object-fit:cover}
+.scan-beam{
+  position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  top:0;animation:beam 1.8s ease-in-out infinite;
+}
+@keyframes beam{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+.scan-lines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 4px,rgba(232,69,69,0.05) 4px,rgba(232,69,69,0.05) 5px);
+}
+.scan-title{font-size:17px;font-weight:700;color:var(--text);text-align:center}
+.scan-sub{font-size:12px;color:var(--text3);text-align:center}
+.scan-steps{display:flex;flex-direction:column;gap:8px;width:100%}
+.scan-step{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:var(--text3);transition:color 0.3s;
+}
+.scan-step.active{color:var(--text);font-weight:600}
+.scan-step.done{color:var(--safe)}
+.step-dot{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;transition:all 0.3s;
+}
+.scan-step.active .step-dot{border-color:var(--accent);background:rgba(232,69,69,0.1)}
+.scan-step.active .step-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 0.8s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.6)}}
+.scan-step.done .step-dot{border-color:var(--safe);background:var(--safe-bg)}
+.scan-step.done .step-dot::after{content:'✓';font-size:9px;color:var(--safe)}
+
+/* ── RESULT MODAL ── */
+.result-overlay{
+  position:fixed;inset:0;z-index:110;
+  background:rgba(26,25,22,0.75);
+  backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.result-overlay.show{display:flex}
+.result-modal{
+  background:var(--surface);border-radius:20px;
+  width:100%;max-width:520px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:var(--shadow-lg);
+  animation:modal-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.rm-header{
+  padding:20px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.verdict-icon-circle{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.verdict-icon-circle svg{width:20px;height:20px;fill:none;stroke-width:2.5}
+.rm-verdict-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px}
+.rm-verdict-heading{font-size:18px;font-weight:800}
+.rm-verdict-desc{font-size:12px;color:var(--text2);margin-top:2px}
+.rm-close{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--surface2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:16px;flex-shrink:0}
+
+.rm-scroll{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:18px}
+.rm-scroll::-webkit-scrollbar{width:0}
+
+.sec-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px}
+
+.score-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sc{
+  background:var(--surface2);border-radius:var(--radius-sm);
+  padding:12px 14px;position:relative;overflow:hidden;
+}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.sc.danger::after{background:var(--danger)}
+.sc.warn::after{background:var(--warn)}
+.sc.safe::after{background:var(--safe)}
+.sc.neutral::after{background:var(--border2)}
+.sc-lbl{font-size:10px;color:var(--text3);font-weight:600;margin-bottom:5px}
+.sc-val{font-size:15px;font-weight:800;margin-bottom:7px}
+.sc-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.sc-bar{height:100%;border-radius:2px;width:0;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1)}
+.sc-note{font-size:10px;color:var(--text3)}
+
+.metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric-tile{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px}
+.mt-lbl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.mt-val{font-size:18px;font-weight:800;color:var(--text)}
+.mt-sub{font-size:9px;color:var(--text3);margin-top:2px}
+
+.forensic-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ftile{border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
+.ftile-head{padding:5px 8px;font-size:9px;font-weight:700;color:var(--text2);background:var(--surface2);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.05em}
+.ftile img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+
+.cap-analysis{background:var(--surface2);border-radius:var(--radius-sm);padding:14px}
+.cap-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.cap-box{background:var(--surface);border-radius:8px;padding:10px 11px}
+.cap-box-lbl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+.cap-box-text{font-size:12px;color:var(--text);line-height:1.5;font-style:italic}
+.sim-row{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px}
+.sim-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.sim-fill{height:100%;border-radius:3px;width:0;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1)}
+.cap-verdict-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cap-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:0.04em}
+.cap-expl{font-size:11px;color:var(--text2)}
+
+.rm-footer{
+  padding:14px 22px;border-top:1px solid var(--border);
+  display:flex;gap:8px;flex-shrink:0;background:var(--surface);
+}
+.rm-btn{
+  flex:1;padding:11px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all 0.15s;border:none;
+}
+.rm-btn.primary{background:var(--text);color:#fff}
+.rm-btn.primary:hover{background:#333}
+.rm-btn.secondary{background:var(--surface2);color:var(--text2)}
+.rm-btn.secondary:hover{background:var(--border)}
+
+/* ── SUCCESS POPUP ── */
+.success-overlay{
+  position:fixed;inset:0;z-index:120;
+  background:rgba(26,25,22,0.8);
+  backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;
+}
+.success-overlay.show{display:flex}
+.success-modal{
+  background:var(--surface);border-radius:24px;
+  width:300px;padding:28px 24px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  box-shadow:var(--shadow-lg);
+  animation:modal-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.success-ring{
+  width:70px;height:70px;border-radius:50%;
+  background:var(--safe-bg);border:2px solid var(--safe-border);
+  display:flex;align-items:center;justify-content:center;
+  animation:pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes pop-in{from{transform:scale(0.3);opacity:0}to{transform:scale(1);opacity:1}}
+.success-ring svg{width:28px;height:28px;stroke:var(--safe);fill:none;stroke-width:2.5}
+.success-card-preview{
+  width:200px;border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--border);box-shadow:var(--shadow-lg);
+  animation:slide-up 0.4s ease 0.1s both;
+}
+@keyframes slide-up{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.scp-img{width:100%;height:120px;object-fit:cover;display:block}
+.scp-body{padding:8px 11px}
+.scp-user{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.scp-avi{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#f093fb,#f5576c)}
+.scp-name{font-size:11px;font-weight:700;color:var(--text)}
+.scp-cap{font-size:11px;color:var(--text2);line-height:1.45}
+.scp-likes{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:10px;color:var(--text3)}
+.scp-likes svg{width:11px;height:11px;fill:var(--accent);stroke:none}
+.success-text{text-align:center;animation:slide-up 0.4s ease 0.2s both}
+.success-title{font-size:19px;font-weight:800;color:var(--text);margin-bottom:3px}
+.success-desc{font-size:12px;color:var(--text3);line-height:1.55}
+.success-btn{
+  width:100%;padding:11px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:700;font-family:var(--font);
+  border:none;background:var(--text);color:#fff;cursor:pointer;
+  transition:all 0.15s;
+}
+.success-btn:hover{background:#333}
+
+/* newly posted card animation */
+@keyframes post-fly-in{
+  from{opacity:0;transform:translateY(-30px) scale(0.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.post-card.new-post{animation:post-fly-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both}
+
+/* ── STATIC POST IMAGES (placeholder gradients) ── */
+.placeholder-img{
+  width:100%;display:block;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="brand-name">Vibe</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Explore
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+        <span class="nav-badge">4</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messages
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Saved
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </div>
+    </nav>
+
+    <div class="model-status">
+      <span class="mpill {{ 'on' if forgery_loaded else 'off' }}" id="forgeryPill">Forgery ON</span>
+      <span class="mpill {{ 'on' if caption_loaded else 'off' }}" id="captionPill">Caption ON</span>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-avi">A</div>
+      <div class="user-info">
+        <div class="uname">Alex Johnson</div>
+        <div class="uhandle">@alexj · 1.2k followers</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER FEED -->
+  <main class="feed" id="feedMain">
+    <div class="feed-header">
+      <h2>Your Feed</h2>
+      <div class="feed-tabs">
+        <button class="ftab active">For You</button>
+        <button class="ftab">Following</button>
+        <button class="ftab">Trending</button>
+      </div>
+    </div>
+
+    <!-- Stories -->
+    <div class="stories-row">
+      <div class="story-item">
+        <div class="story-add-ring" onclick="document.getElementById('fileInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="story-label">Add Story</div>
+      </div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=1" alt=""></div></div><div class="story-label">maya_k</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=2" alt=""></div></div><div class="story-label">surfin_jo</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=3" alt=""></div></div><div class="story-label">travel.k</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=4" alt=""></div></div><div class="story-label">neon_pete</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=5" alt=""></div></div><div class="story-label">luna.photos</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=6" alt=""></div></div><div class="story-label">citycafe</div></div>
+      <div class="story-item"><div class="story-ring"><div class="story-inner"><img src="https://i.pravatar.cc/56?img=7" alt=""></div></div><div class="story-label">adventure</div></div>
+    </div>
+
+    <!-- Static posts (20) -->
+    <div id="postsContainer">
+
+    <!-- POST 1 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=10" alt=""></div>
+        <div class="post-meta"><div class="post-user">Maya Krishnan</div><div class="post-time">@maya_k · 2m ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80" alt="Mountains">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Golden hour in the Alps was absolutely breathtaking 🏔️ Worth every step of that 6-hour hike!</div>
+        <div class="post-tags"><span class="post-tag">#mountains</span><span class="post-tag">#hiking</span><span class="post-tag">#golden_hour</span></div>
+        <div class="post-actions">
+          <button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 2.4k</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 84</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=20" alt=""></div>
+        <div class="post-meta"><div class="post-user">Jordan Lee</div><div class="post-time">@surf_jo · 15m ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img wide" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80" alt="Beach">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Sunday morning at the beach, coffee in hand 🌊 Life doesn't get better than this.</div>
+        <div class="post-tags"><span class="post-tag">#beach</span><span class="post-tag">#morning_vibes</span><span class="post-tag">#ocean</span></div>
+        <div class="post-actions">
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 1.1k</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 47</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 3 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=30" alt=""></div>
+        <div class="post-meta"><div class="post-user">Kai Nakamura</div><div class="post-time">@kai.photo · 32m ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80" alt="Food">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Finally found the best ramen in Tokyo. 45-min queue but 100% worth it 🍜</div>
+        <div class="post-tags"><span class="post-tag">#ramen</span><span class="post-tag">#tokyo</span><span class="post-tag">#foodie</span></div>
+        <div class="post-actions">
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 987</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 112</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 4 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=40" alt=""></div>
+        <div class="post-meta"><div class="post-user">Priya Mehta</div><div class="post-time">@priya_art · 1h ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80" alt="Aurora">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Northern lights dancing above Tromsø last night 🌌 Checked off my bucket list!</div>
+        <div class="post-tags"><span class="post-tag">#northern_lights</span><span class="post-tag">#norway</span><span class="post-tag">#aurora</span></div>
+        <div class="post-actions">
+          <button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 5.6k</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 203</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 5 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=50" alt=""></div>
+        <div class="post-meta"><div class="post-user">Marco Ricci</div><div class="post-time">@marco.r · 2h ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=600&q=80" alt="City">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Sunrise over the Colosseum. Rome, you never disappoint 🏛️ #eternal_city</div>
+        <div class="post-tags"><span class="post-tag">#rome</span><span class="post-tag">#colosseum</span><span class="post-tag">#travel</span></div>
+        <div class="post-actions">
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 3.2k</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 91</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 6 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=60" alt=""></div>
+        <div class="post-meta"><div class="post-user">Sasha Moon</div><div class="post-time">@sasha.m · 3h ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=600&q=80" alt="Coffee art">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">When your barista is also an artist ☕ Every morning should start like this.</div>
+        <div class="post-tags"><span class="post-tag">#latte_art</span><span class="post-tag">#coffee</span><span class="post-tag">#morning</span></div>
+        <div class="post-actions">
+          <button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 742</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 38</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POST 7 -->
+    <div class="post-card">
+      <div class="post-top">
+        <div class="post-avi"><img src="https://i.pravatar.cc/40?img=11" alt=""></div>
+        <div class="post-meta"><div class="post-user">Lena Baxter</div><div class="post-time">@lena.b · 4h ago</div></div>
+        <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+      </div>
+      <div class="post-img-wrap">
+        <img class="post-img" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80" alt="Lake">
+      </div>
+      <div class="post-body">
+        <div class="post-caption">Clarity 💙 Found my favorite spot in the Swiss Alps. Nothing but silence and this view.</div>
+        <div class="post-tags"><span class="post-tag">#switzerland</span><span class="post-tag">#lake</span><span class="post-tag">#alps</span></div>
+        <div class="post-actions">
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 4.8k</button>
+          <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 167</button>
+          <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POSTS 8-20 abbreviated -->
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=12" alt=""></div><div class="post-meta"><div class="post-user">Omar Faris</div><div class="post-time">@omar_f · 5h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80" alt="Desert"></div><div class="post-body"><div class="post-caption">Sahara at dusk is a completely different world. The silence is deafening 🌅</div><div class="post-tags"><span class="post-tag">#sahara</span><span class="post-tag">#desert</span><span class="post-tag">#africa</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 2.1k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 76</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=13" alt=""></div><div class="post-meta"><div class="post-user">Nadia Park</div><div class="post-time">@nadia.park · 6h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1543362906-acfc16c67564?w=600&q=80" alt="Cherry blossoms"></div><div class="post-body"><div class="post-caption">Cherry blossom season in Kyoto is pure magic 🌸 Japan in spring is my annual tradition.</div><div class="post-tags"><span class="post-tag">#kyoto</span><span class="post-tag">#sakura</span><span class="post-tag">#japan</span></div><div class="post-actions"><button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 7.3k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 341</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=14" alt=""></div><div class="post-meta"><div class="post-user">Tyler Woods</div><div class="post-time">@ty.woods · 7h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1465188162913-8fb5709d6d57?w=600&q=80" alt="Waterfall"></div><div class="post-body"><div class="post-caption">Found this hidden waterfall on a trail in Iceland. No map, just instinct and muddy boots 🌊</div><div class="post-tags"><span class="post-tag">#iceland</span><span class="post-tag">#waterfall</span><span class="post-tag">#hike</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 1.9k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 83</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=15" alt=""></div><div class="post-meta"><div class="post-user">Ava Chen</div><div class="post-time">@ava.chen · 8h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80" alt="Fine dining"></div><div class="post-body"><div class="post-caption">Anniversary dinner at Le Bernardin. Every dish was a masterpiece 🍽️✨</div><div class="post-tags"><span class="post-tag">#finedining</span><span class="post-tag">#nyc</span><span class="post-tag">#foodphotography</span></div><div class="post-actions"><button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 632</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 29</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=16" alt=""></div><div class="post-meta"><div class="post-user">Ethan Blake</div><div class="post-time">@e.blake · 9h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1518563172008-e56c5dfbaef6?w=600&q=80" alt="Snowy forest"></div><div class="post-body"><div class="post-caption">Woke up to 30cm of fresh snow. The whole forest is hushed. Absolute serenity ❄️🌲</div><div class="post-tags"><span class="post-tag">#winter</span><span class="post-tag">#snow</span><span class="post-tag">#forest</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 2.7k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 94</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=17" alt=""></div><div class="post-meta"><div class="post-user">Isabelle Roy</div><div class="post-time">@iz.roy · 10h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1490750967868-88df5691cc81?w=600&q=80" alt="Tulips"></div><div class="post-body"><div class="post-caption">Keukenhof Gardens in spring — 7 million tulips and I still managed to find my favorite spot 🌷</div><div class="post-tags"><span class="post-tag">#tulips</span><span class="post-tag">#netherlands</span><span class="post-tag">#keukenhof</span></div><div class="post-actions"><button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 3.4k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 118</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=18" alt=""></div><div class="post-meta"><div class="post-user">Dev Anand</div><div class="post-time">@dev.foto · 11h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80" alt="Bali beach"></div><div class="post-body"><div class="post-caption">Bali sunsets hit different. Jimbaran Bay at its finest 🌴🌅</div><div class="post-tags"><span class="post-tag">#bali</span><span class="post-tag">#sunset</span><span class="post-tag">#indonesia</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 4.1k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 152</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=19" alt=""></div><div class="post-meta"><div class="post-user">Fiona Bell</div><div class="post-time">@fio.bell · 12h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80" alt="Brunch"></div><div class="post-body"><div class="post-caption">Sunday brunch goals achieved 🥑🍳 My kitchen, my rules, my avocado toast empire.</div><div class="post-tags"><span class="post-tag">#brunch</span><span class="post-tag">#avocadotoast</span><span class="post-tag">#cooking</span></div><div class="post-actions"><button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 891</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 44</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=21" alt=""></div><div class="post-meta"><div class="post-user">Carlos Vega</div><div class="post-time">@carlos.v · 13h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1562408590-e32931084e23?w=600&q=80" alt="Milky way"></div><div class="post-body"><div class="post-caption">Milky Way from the Atacama Desert, Chile. No light pollution, just the universe 🌌🔭</div><div class="post-tags"><span class="post-tag">#astrophotography</span><span class="post-tag">#milkyway</span><span class="post-tag">#chile</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 6.2k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 278</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=22" alt=""></div><div class="post-meta"><div class="post-user">Amara Diallo</div><div class="post-time">@amara.d · 14h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1502635385003-ee1e6a1a742d?w=600&q=80" alt="Cliff"></div><div class="post-body"><div class="post-caption">Cliffs of Moher, Ireland. Feeling very small in the best possible way 🌊🇮🇪</div><div class="post-tags"><span class="post-tag">#ireland</span><span class="post-tag">#cliffs</span><span class="post-tag">#atlantic</span></div><div class="post-actions"><button class="action-btn liked"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 3.9k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 137</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    <div class="post-card"><div class="post-top"><div class="post-avi"><img src="https://i.pravatar.cc/40?img=23" alt=""></div><div class="post-meta"><div class="post-user">Hana Sato</div><div class="post-time">@hana.s · 15h ago</div></div><div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div></div><div class="post-img-wrap"><img class="post-img" src="https://images.unsplash.com/photo-1519985176271-adb1088fa94c?w=600&q=80" alt="Street food"></div><div class="post-body"><div class="post-caption">Bangkok street food tour — 12 dishes, 4 neighbourhoods, 1 very full belly 🇹🇭🌶️</div><div class="post-tags"><span class="post-tag">#bangkok</span><span class="post-tag">#streetfood</span><span class="post-tag">#thailand</span></div><div class="post-actions"><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 1.5k</button><button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 63</button><button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button></div></div></div>
+
+    </div><!-- end postsContainer -->
+  </main>
+
+  <!-- RIGHT: COMPOSER -->
+  <aside class="composer-col">
+    <div class="composer-header">
+      <h3>New Post</h3>
+      <p>Share a moment — our AI will verify it</p>
+    </div>
+
+    <div class="comp-tabs">
+      <div class="comp-tab active">Photo</div>
+      <div class="comp-tab">Video</div>
+      <div class="comp-tab">Story</div>
+    </div>
+
+    <div class="comp-body">
+      <!-- Upload zone -->
+      <div class="upload-zone" id="uploadZone">
+        <div class="uz-placeholder">
+          <div class="uz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="uz-label">Drop your photo here</div>
+          <div class="uz-sub">JPG · PNG · WEBP · up to 32MB</div>
+        </div>
+        <img class="uz-preview" id="previewImg" src="" alt="">
+        <button class="uz-remove" id="removeBtn">✕ Remove</button>
+      </div>
+      <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.bmp" style="display:none">
+
+      <!-- Caption -->
+      <div>
+        <div class="field-label">Caption</div>
+        <textarea class="cap-field" id="captionInput" placeholder="Write a caption that truly describes your photo…" maxlength="300" rows="3"></textarea>
+        <div class="char-row">
+          <span class="char-c"><span id="charCount">0</span>/300</span>
+          <span class="char-limit">Keep it real ✓</span>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div>
+        <div class="field-label">Tags</div>
+        <div class="tag-row">
+          <span class="stag" onclick="this.classList.toggle('sel')">#travel</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#photography</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#nature</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#food</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#lifestyle</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#citylife</span>
+          <span class="stag" onclick="this.classList.toggle('sel')">#art</span>
+        </div>
+      </div>
+
+      <!-- AI note -->
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;display:flex;gap:8px;align-items:flex-start">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span style="font-size:11px;color:var(--text3);line-height:1.5">TruthLens AI verifies your photo for authenticity and checks your caption matches the image before publishing.</span>
+      </div>
+    </div>
+
+    <div class="err-strip" id="errStrip"></div>
+
+    <div class="comp-footer">
+      <button class="post-submit" id="postBtn" disabled>Publish Post →</button>
+      <button class="post-draft">Save as Draft</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- SCANNING OVERLAY -->
+<div class="scan-overlay" id="scanOverlay">
+  <div class="scan-modal">
+    <div class="scan-preview">
+      <img id="scanImg" src="" alt="">
+      <div class="scan-lines"></div>
+      <div class="scan-beam"></div>
+    </div>
+    <div>
+      <div class="scan-title">Analyzing your post</div>
+      <div class="scan-sub" id="scanSub">Running AI verification…</div>
+    </div>
+    <div class="scan-steps" id="scanSteps"></div>
+  </div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-modal">
+    <div class="rm-header">
+      <div class="verdict-icon-circle" id="verdictIconCircle">
+        <svg viewBox="0 0 24 24" id="verdictSvg" stroke="currentColor" stroke-width="2.5" fill="none"></svg>
+      </div>
+      <div>
+        <div class="rm-verdict-label">Moderation Decision</div>
+        <div class="rm-verdict-heading" id="verdictHeading">—</div>
+        <div class="rm-verdict-desc" id="verdictDesc">—</div>
+      </div>
+      <button class="rm-close" id="closeResult">✕</button>
+    </div>
+
+    <div class="rm-scroll">
+
+      <!-- Scores -->
+      <div>
+        <div class="sec-title">Detection scores</div>
+        <div class="score-cards">
+          <div class="sc" id="forgeryCard">
+            <div class="sc-lbl">Image forgery</div>
+            <div class="sc-val" id="forgeryVerdictText">—</div>
+            <div class="sc-bar-bg"><div class="sc-bar" id="forgeryBar"></div></div>
+            <div class="sc-note" id="forgeryMeta">—</div>
+          </div>
+          <div class="sc" id="captionCard">
+            <div class="sc-lbl">Caption match</div>
+            <div class="sc-val" id="captionVerdictText">—</div>
+            <div class="sc-bar-bg"><div class="sc-bar" id="captionBar"></div></div>
+            <div class="sc-note" id="captionMeta">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div>
+        <div class="sec-title">Image metrics</div>
+        <div class="metrics-row">
+          <div class="metric-tile">
+            <div class="mt-lbl">Tampered area</div>
+            <div class="mt-val" id="smTampered">—</div>
+            <div class="mt-sub">pixels flagged</div>
+          </div>
+          <div class="metric-tile">
+            <div class="mt-lbl">Forgery score</div>
+            <div class="mt-val" id="smProb">—</div>
+            <div class="mt-sub">mean probability</div>
+          </div>
+          <div class="metric-tile">
+            <div class="mt-lbl">Resolution</div>
+            <div class="mt-val" id="smSize" style="font-size:14px">—</div>
+            <div class="mt-sub">original</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forensic images -->
+      <div>
+        <div class="sec-title">Forensic detail</div>
+        <div class="forensic-strip">
+          <div class="ftile"><div class="ftile-head">Original</div><img id="imgOriginal" src="" alt=""></div>
+          <div class="ftile"><div class="ftile-head">Heatmap</div><img id="imgHeatmap" src="" alt=""></div>
+          <div class="ftile"><div class="ftile-head">Overlay</div><img id="imgOverlay" src="" alt=""></div>
+        </div>
+      </div>
+
+      <!-- Caption analysis -->
+      <div id="captionSection" style="display:none">
+        <div class="sec-title">Caption analysis</div>
+        <div class="cap-analysis">
+          <div class="cap-cols">
+            <div class="cap-box">
+              <div class="cap-box-lbl">🔍 Detected content</div>
+              <div class="cap-box-text" id="capGenerated">—</div>
+            </div>
+            <div class="cap-box">
+              <div class="cap-box-lbl">✍️ Your caption</div>
+              <div class="cap-box-text" id="captionText">—</div>
+            </div>
+          </div>
+          <div class="sim-row"><span>Match score</span><span id="simPct">—</span></div>
+          <div class="sim-bg"><div class="sim-fill" id="simBar"></div></div>
+          <div class="cap-verdict-row">
+            <span class="cap-badge" id="capBadge">—</span>
+            <span class="cap-expl" id="capConf"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rm-footer">
+      <button class="rm-btn secondary" id="closeResult2">Close</button>
+      <button class="rm-btn primary" id="resetBtn">Post Another</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS POPUP -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-modal">
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="success-card-preview">
+      <img class="scp-img" id="successImg" src="" alt="">
+      <div class="scp-body">
+        <div class="scp-user">
+          <div class="scp-avi"></div>
+          <div class="scp-name">Alex Johnson</div>
+        </div>
+        <div class="scp-cap" id="successCap"></div>
+        <div class="scp-likes">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Just posted to your feed
+        </div>
+      </div>
+    </div>
+    <div class="success-text">
+      <div class="success-title">Post is live! 🎉</div>
+      <div class="success-desc">All moderation checks passed.<br>Your content is now on the feed.</div>
+    </div>
+    <button class="success-btn" id="successReset">Post Again</button>
+  </div>
+</div>
+
+<script>
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const uploadZone   = document.getElementById('uploadZone');
+const fileInput    = document.getElementById('fileInput');
+const previewImg   = document.getElementById('previewImg');
+const removeBtn    = document.getElementById('removeBtn');
+const captionInput = document.getElementById('captionInput');
+const charCount    = document.getElementById('charCount');
+const postBtn      = document.getElementById('postBtn');
+const errStrip     = document.getElementById('errStrip');
+const scanOverlay  = document.getElementById('scanOverlay');
+const scanImg      = document.getElementById('scanImg');
+const scanSteps    = document.getElementById('scanSteps');
+const scanSub      = document.getElementById('scanSub');
+const resultOverlay= document.getElementById('resultOverlay');
+const successOverlay=document.getElementById('successOverlay');
+const postsContainer=document.getElementById('postsContainer');
+
+let selectedFile = null;
+
+// ── File handling ─────────────────────────────────────────────────────────────
+function setFile(f) {
+  if (!f) return;
+  selectedFile = f;
+  const r = new FileReader();
+  r.onload = e => {
+    previewImg.src = e.target.result;
+    uploadZone.classList.add('has-img');
+    postBtn.disabled = false;
+  };
+  r.readAsDataURL(f);
+  errStrip.classList.remove('show');
+}
+function clearFile() {
+  selectedFile = null;
+  fileInput.value = '';
+  previewImg.src = '';
+  uploadZone.classList.remove('has-img');
+  postBtn.disabled = true;
+}
+
+uploadZone.addEventListener('click', () => { if (!uploadZone.classList.contains('has-img')) fileInput.click(); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--text3)'; });
+uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.style.borderColor = '';
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+removeBtn.addEventListener('click', e => { e.stopPropagation(); clearFile(); });
+captionInput.addEventListener('input', () => { charCount.textContent = captionInput.value.length; });
+
+// ── Scan steps ────────────────────────────────────────────────────────────────
+const STEPS = [
+  'Loading image tensor',
+  'Extracting visual features',
+  'Running UNet forgery scan',
+  'Computing probability map',
+  'Analysing caption semantics',
+  'Verifying caption alignment',
+  'Assembling final verdict',
+];
+function buildSteps() {
+  scanSteps.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'scan-step';
+    d.id = 'step_' + i;
+    d.innerHTML = `<div class="step-dot" id="sd_${i}"></div><span>${s}</span>`;
+    scanSteps.appendChild(d);
+  });
+}
+function setStep(idx) {
+  STEPS.forEach((_, i) => {
+    const el = document.getElementById('step_' + i);
+    if (!el) return;
+    el.className = 'scan-step' + (i < idx ? ' done' : i === idx ? ' active' : '');
+  });
+}
+
+// ── Color helpers ─────────────────────────────────────────────────────────────
+function cls(v) {
+  if (['FORGED','MISLEADING','BLOCKED'].includes(v))    return 'danger';
+  if (['SUSPICIOUS','UNCERTAIN','WARNING'].includes(v)) return 'warn';
+  if (['AUTHENTIC','APPROVED'].includes(v))             return 'safe';
+  return 'neutral';
+}
+const COLORS = {
+  danger:  { text:'#e84545', bar:'#e84545', bg:'#fef2f2', border:'#fca5a5' },
+  warn:    { text:'#f59e0b', bar:'#f59e0b', bg:'#fef3c7', border:'#fcd34d' },
+  safe:    { text:'#0fa968', bar:'#0fa968', bg:'#e8f8f0', border:'#a3e6c6' },
+  neutral: { text:'#6b6860', bar:'#b0ada8', bg:'#f8f7f5', border:'#e8e6e2' },
+};
+function col(v) { return COLORS[cls(v)] || COLORS.neutral; }
+
+const VERDICT_ICONS = {
+  BLOCKED: '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
+  WARNING: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  APPROVED:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+};
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(data) {
+  scanOverlay.classList.remove('show');
+  resultOverlay.classList.add('show');
+
+  const overall = data.overall || 'BLOCKED';
+  const c = col(overall);
+
+  // verdict header
+  const vic = document.getElementById('verdictIconCircle');
+  vic.style.background = c.bg;
+  vic.style.border = '1px solid ' + c.border;
+  const svg = document.getElementById('verdictSvg');
+  svg.innerHTML = VERDICT_ICONS[overall] || VERDICT_ICONS.APPROVED;
+  svg.style.stroke = c.text;
+
+  document.getElementById('verdictHeading').textContent =
+    overall === 'APPROVED' ? 'Content Approved' :
+    overall === 'WARNING'  ? 'Flagged for Review' : 'Post Blocked';
+  document.getElementById('verdictHeading').style.color = c.text;
+  document.getElementById('verdictDesc').textContent =
+    overall === 'APPROVED' ? 'All checks passed. Your post is ready to go live.' :
+    overall === 'WARNING'  ? 'Suspicious signals detected. Manual review recommended.' :
+    'Forgery or caption mismatch detected. This post cannot be published.';
+
+  // forgery card
+  const fv = data.forgery_verdict || 'UNAVAILABLE';
+  const fc = col(fv);
+  document.getElementById('forgeryCard').className = 'sc ' + cls(fv);
+  document.getElementById('forgeryVerdictText').style.color = fc.text;
+  document.getElementById('forgeryVerdictText').textContent = fv;
+  document.getElementById('forgeryMeta').textContent =
+    data.forgery_confidence !== undefined
+      ? `Confidence: ${data.forgery_confidence}%  ·  Mean: ${(data.forgery_mean_prob * 100).toFixed(1)}%`
+      : fv;
+  setTimeout(() => {
+    const b = document.getElementById('forgeryBar');
+    b.style.width = Math.min(100, data.forgery_confidence || 0) + '%';
+    b.style.background = fc.bar;
+  }, 300);
+
+  // caption card
+  const cv = data.caption_verdict || 'SKIPPED';
+  const cc = col(cv);
+  document.getElementById('captionCard').className = 'sc ' + cls(cv);
+  document.getElementById('captionVerdictText').style.color = cc.text;
+  document.getElementById('captionVerdictText').textContent = cv;
+  const simPct = data.caption_confidence !== undefined ? Math.round(data.caption_confidence * 100) : null;
+  document.getElementById('captionMeta').textContent =
+    simPct !== null ? `Match score: ${simPct}%` :
+    cv === 'SKIPPED' ? 'No caption provided' : cv;
+  setTimeout(() => {
+    const b = document.getElementById('captionBar');
+    b.style.width = (simPct !== null ? Math.min(100, simPct) : 0) + '%';
+    b.style.background = cc.bar;
+  }, 450);
+
+  // sub metrics
+  if (data.forgery_tampered_pct !== undefined) {
+    document.getElementById('smTampered').textContent = data.forgery_tampered_pct + '%';
+    document.getElementById('smTampered').style.color = fc.text;
+    document.getElementById('smProb').textContent = (data.forgery_mean_prob * 100).toFixed(1) + '%';
+    document.getElementById('smProb').style.color = fc.text;
+  }
+  document.getElementById('smSize').textContent = data.image_size || '—';
+
+  // forensic
+  if (data.original_b64) document.getElementById('imgOriginal').src = 'data:image/png;base64,' + data.original_b64;
+  if (data.heatmap_b64)  document.getElementById('imgHeatmap').src  = 'data:image/png;base64,' + data.heatmap_b64;
+  if (data.overlay_b64)  document.getElementById('imgOverlay').src  = 'data:image/png;base64,' + data.overlay_b64;
+
+  // caption section
+  const capSec = document.getElementById('captionSection');
+  if (data.caption_text && data.caption_verdict && data.caption_verdict !== 'SKIPPED') {
+    capSec.style.display = 'block';
+    document.getElementById('capGenerated').textContent = data.caption_generated ? `"${data.caption_generated}"` : '(not available)';
+    document.getElementById('captionText').textContent = `"${data.caption_text}"`;
+    if (simPct !== null) {
+      document.getElementById('simPct').textContent = simPct + '%';
+      setTimeout(() => {
+        const sb = document.getElementById('simBar');
+        sb.style.width = Math.min(100, simPct) + '%';
+        sb.style.background = cc.bar;
+      }, 500);
+    }
+    const badge = document.getElementById('capBadge');
+    badge.textContent = data.caption_verdict;
+    badge.style.background = cc.bg;
+    badge.style.color = cc.text;
+    badge.style.border = '1px solid ' + cc.border;
+    document.getElementById('capConf').textContent =
+      data.caption_verdict === 'AUTHENTIC'  ? 'Caption accurately describes the detected image content.' :
+      data.caption_verdict === 'UNCERTAIN'  ? 'Caption is loosely related — some key details may differ.' :
+      data.caption_verdict === 'MISLEADING' ? 'Caption appears unrelated to what was detected in the image.' : '';
+  } else {
+    capSec.style.display = 'none';
+  }
+
+  // success popup if approved
+  if (overall === 'APPROVED') {
+    setTimeout(() => {
+      resultOverlay.classList.remove('show');
+      document.getElementById('successImg').src = previewImg.src;
+      const cap = captionInput.value.trim();
+      document.getElementById('successCap').textContent = cap || '(no caption)';
+      successOverlay.classList.add('show');
+
+      // Add new post to feed
+      addNewPostToFeed(previewImg.src, cap);
+    }, 600);
+  }
+}
+
+// ── Add approved post to feed ─────────────────────────────────────────────────
+function addNewPostToFeed(imgSrc, caption) {
+  const tags = Array.from(document.querySelectorAll('.stag.sel')).map(t => t.textContent).join('');
+  const card = document.createElement('div');
+  card.className = 'post-card new-post';
+  card.innerHTML = `
+    <div class="post-top">
+      <div class="post-avi" style="background:linear-gradient(135deg,#f093fb,#f5576c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px">A</div>
+      <div class="post-meta"><div class="post-user">Alex Johnson</div><div class="post-time">@alexj · Just now</div></div>
+      <div class="post-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    </div>
+    <div class="post-img-wrap">
+      <img class="post-img" src="${imgSrc}" alt="Your post">
+      <span class="post-verdict-badge approved show">✓ Verified</span>
+    </div>
+    <div class="post-body">
+      <div class="post-caption">${caption || '(no caption)'}</div>
+      <div class="post-tags">${tags}</div>
+      <div class="post-actions">
+        <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 0</button>
+        <button class="action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 0</button>
+        <button class="action-btn share-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+      </div>
+    </div>
+  `;
+  postsContainer.insertBefore(card, postsContainer.firstChild);
+  // scroll feed to top
+  document.getElementById('feedMain').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Submit ─────────────────────────────────────────────────────────────────────
+postBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  postBtn.disabled = true;
+  errStrip.classList.remove('show');
+
+  buildSteps();
+  scanOverlay.style.display = 'flex';
+  setTimeout(() => scanOverlay.style.opacity = '1', 10);
+  scanImg.src = previewImg.src;
+
+  let si = 0;
+  setStep(0);
+  const stTimer = setInterval(() => {
+    si++;
+    if (si < STEPS.length) { setStep(si); scanSub.textContent = STEPS[si] + '…'; }
+    else clearInterval(stTimer);
+  }, 700);
+
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+  fd.append('caption', captionInput.value.trim());
+
+  try {
+    const res  = await fetch('/moderate', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+    clearInterval(stTimer);
+    setStep(STEPS.length);
+    setTimeout(() => renderResults(data), 700);
+  } catch (err) {
+    clearInterval(stTimer);
+    scanOverlay.style.opacity = '0';
+    setTimeout(() => scanOverlay.style.display = 'none', 300);
+    errStrip.textContent = '⚠ ' + err.message;
+    errStrip.classList.add('show');
+    postBtn.disabled = false;
+  }
+});
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+function doReset() {
+  clearFile();
+  captionInput.value = '';
+  charCount.textContent = '0';
+  scanOverlay.style.opacity = '0';
+  scanOverlay.style.display = 'none';
+  resultOverlay.classList.remove('show');
+  successOverlay.classList.remove('show');
+  errStrip.classList.remove('show');
+  document.getElementById('forgeryBar').style.width = '0';
+  document.getElementById('captionBar').style.width = '0';
+  document.getElementById('simBar').style.width = '0';
+  document.getElementById('captionSection').style.display = 'none';
+  document.querySelectorAll('.stag.sel').forEach(t => t.classList.remove('sel'));
+}
+
+document.getElementById('resetBtn').addEventListener('click', doReset);
+document.getElementById('closeResult').addEventListener('click', () => { resultOverlay.classList.remove('show'); doReset(); });
+document.getElementById('closeResult2').addEventListener('click', () => { resultOverlay.classList.remove('show'); doReset(); });
+document.getElementById('successReset').addEventListener('click', doReset);
+
+// close result modal on backdrop click
+resultOverlay.addEventListener('click', e => { if (e.target === resultOverlay) { resultOverlay.classList.remove('show'); doReset(); } });
+successOverlay.addEventListener('click', e => { if (e.target === successOverlay) doReset(); });
+
+// ── Like button toggle ─────────────────────────────────────────────────────────
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.action-btn');
+  if (!btn) return;
+  if (btn.querySelector('path[d*="20.84"]')) {
+    btn.classList.toggle('liked');
+  }
+});
+
+// ── Feed tab switcher ──────────────────────────────────────────────────────────
+document.querySelectorAll('.ftab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
