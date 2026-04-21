@@ -8,6 +8,7 @@ import cv2
 import torch
 import torch.nn as nn
 import albumentations as A
+from huggingface_hub import hf_hub_download
 from albumentations.pytorch import ToTensorV2
 from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
@@ -48,8 +49,12 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'bmp'}
 
 # ── Model paths ───────────────────────────────────────────────────────────────
-FORGERY_MODEL_PATH = os.environ.get('FORGERY_MODEL_PATH', 'models/unet_effb4_imd2020_best.pth')
-
+FORGERY_MODEL_PATH = hf_hub_download(
+    repo_id="BaskarRaj/UnetModel",   # ← CHANGE THIS
+    filename="unet_effb4_imd2020_best.pth",
+    local_dir="models",
+    local_dir_use_symlinks=False
+)
  
 _BERT_CAPTION_MODEL_ID = "Salesforce/blip-image-captioning-base"
 
