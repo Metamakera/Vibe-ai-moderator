@@ -382,7 +382,8 @@ def status():
 
 if __name__ == '__main__':
     os.makedirs('uploads', exist_ok=True)
-    os.makedirs('models',  exist_ok=True)
+    os.makedirs('models', exist_ok=True)
     load_forgery_model()
     load_caption_model()
+    # For local testing only
     app.run(debug=True, host='0.0.0.0', port=5000)
